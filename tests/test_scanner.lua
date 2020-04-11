@@ -109,9 +109,6 @@ assert(NUM:match'12.343')
 -- hexadecimal notation
 assert(NUM:match'0x7a2fF')
 
--- hexadecimal notation (yes, this matches)
-assert(NUM:match'0x')
-
 -- hexadecimal notation
 assert(not NUM:match'!ff')
 
