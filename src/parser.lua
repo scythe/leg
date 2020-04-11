@@ -178,8 +178,9 @@ end
 
 -- Counts the number of lines (separated by *'\n'*) in `subject`.
 local function lines (subject)
-	local inc = function (l) return l + 1 end
-	local L = m.Ca( m.Cc(1) * (m.P'\n'/inc + m.P(1)) ^0 )
+	local is_nl = function(c) if c == '\n' then return true end end
+	local inc = function (l, c) return l + 1 end
+	local L = m.Cf( m.Cc(1) * (m.P(1) / is_nl)^0, inc)
 
 	return L:match(subject)
 end
