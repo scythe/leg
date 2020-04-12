@@ -1,9 +1,16 @@
-Leg 0.1.2
+Leg 0.1.3
 =========
 
 This is a release of Leg, a Lua library exporting a complete Lua 5.1 grammar 
 and a small API for user manipulation.
 
+Erratum
+-------
+
+- 2020-4-11: Update leg to work with Lpeg 1.0.2. Some minor fixes. Ongoing
+maintenance is not guaranteed. Still expects Lua 5.1; no goto/label support.
+
+- This version is still available under the original licence in COPYRIGHT.
 
 Dependencies
 ------------
