@@ -53,4 +53,4 @@ bundle:
 	gzip ../$(NAME)-$(VERSION).tar
 
 test:
-	cd tests; lua test.lua
+	lua tests/test.lua
