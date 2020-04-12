@@ -35,7 +35,7 @@ install:
 
 clean:
   # removing the source files and package
-	rm -r $(LUA_LIB)/$(NAME)
+	rm -r ./$(NAME)
 
 documents:
 	# generate documentation
