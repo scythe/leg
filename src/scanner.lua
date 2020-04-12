@@ -60,6 +60,7 @@ local type      = type
 
 -- imported modules
 local m     = require 'lpeg'
+local re    = require 're'
 
 -- module declaration
 module 'leg.scanner'
@@ -351,13 +352,6 @@ end
 -- <% exp = 'LPeg pattern' %>
 NUMBER = #(N + (m.P'.' * N)) * number
 
--- LONG BRACKETS
-local long_brackets = #(m.P'[' * m.P'='^0 * m.P'[') * function (subject, i1)
-	local level = _G.assert( subject:match('^%[(=*)%[', i1) )
-	local _, i2 = subject:find(']'..level..']', i1, true)  -- true = plain "find substring"
-	return (i2 and (i2+1)) or error('unfinished long brackets')(subject, i1)
-end
-
 -- Matches any Lua string.
 -- <% exp = 'LPeg pattern' %>
 STRING = nil
@@ -366,7 +360,9 @@ do
 	          --  OPEN  and  (   (\?)    or ( anything not CLOSE or \n )^0 ) and    CLOSE
 	local Str1 = m.P'"' * ( (m.P'\\' * 1) + (1 - (m.S'"\n\r\f')) )^0 * (m.P'"' + error'unfinished string')
 	local Str2 = m.P"'" * ( (m.P'\\' * 1) + (1 - (m.S"'\n\r\f")) )^0 * (m.P"'" + error'unfinished string')
-	local Str3 = long_brackets
+	local Str3 = re.compile([[ longstring <- ('[' {:eq: '='* :} '[' close)
+                                   close <- ']' =eq ']' / . close ]])
+ 
 	STRING = Str1 + Str2 + Str3
 end
 
