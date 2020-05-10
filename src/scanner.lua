@@ -301,16 +301,17 @@ end
 
 -- A pattern which matches any Lua keyword.
 -- <% exp = 'LPeg pattern' %>
-KEYWORD = apply (keywords, {
+local KEYWORD = apply (keywords, {
 	'and',      'break',    'do',       'else',     'elseif',
 	'end',      'false',    'for',      'function', 'if',
 	'in',       'local',    'nil',      'not',      'or',
 	'repeat',   'return',   'then',     'true',     'until',    'while',
 }, -(N + AZ) )
+scanner.KEYWORD = KEYWORD
 
 -- A pattern which matches any Lua symbol.
 -- <% exp = 'LPeg pattern' %>
-SYMBOL = apply (symbols, {
+local SYMBOL = apply (symbols, {
 	'+',     '-',     '*',     '/',     '%',     '^',     '#',
 	'==',    '~=',    '<=',    '>=',    '<',     '>',     '=',
 	'(',     ')',     '{',     '}',     '[',     ']',
@@ -330,10 +331,11 @@ SYMBOL = m.P(false)
 for _, v in _G.pairs(symbols) do
 	SYMBOL = SYMBOL + v
 end
+scanner.SYMBOL = SYMBOL
 
 -- Matches any Lua identifier.
 -- <% exp = 'LPeg pattern' %>
-IDENTIFIER = AZ * (AZ+N)^0 - KEYWORD
+scanner.IDENTIFIER = AZ * (AZ+N)^0 - KEYWORD
 
 -- tries to implement the same read_numeral() as in llex.c
 local number = function (subject, i)
@@ -350,11 +352,11 @@ end
 
 -- Matches any Lua number.
 -- <% exp = 'LPeg pattern' %>
-NUMBER = #(N + (m.P'.' * N)) * number
+scanner.NUMBER = #(N + (m.P'.' * N)) * number
 
 -- Matches any Lua string.
 -- <% exp = 'LPeg pattern' %>
-STRING = nil
+local STRING = nil
 do
 	-- TEMP ddd limites: local ddd  = m.P'\\' * (N^3 + N^2 + N^1)
 	          --  OPEN  and  (   (\?)    or ( anything not CLOSE or \n )^0 ) and    CLOSE
@@ -365,13 +367,14 @@ do
  
 	STRING = Str1 + Str2 + Str3
 end
+scanner.STRING = STRING
 
 local multi  = m.P'--' * long_brackets
 local single = m.P'--' * (1 - m.P'\n')^0
 
 -- Matches any type of comment.
 -- <% exp = 'LPeg pattern' %>
-COMMENT = multi + single -- multi must be the first ( --[ is a one line comment )
+scanner.COMMENT = multi + single -- multi must be the first ( --[ is a one line comment )
 
 -------------------------------------------------------------------------------
 ------------------------------ USEFUL PATTERNS --------------------------------
@@ -379,28 +382,30 @@ COMMENT = multi + single -- multi must be the first ( --[ is a one line comment 
 
 -- Matches any space character.
 -- <% exp = 'LPeg pattern' %>
-SPACE = m.S'\n \t\r\f'
+scanner.SPACE = m.S'\n \t\r\f'
 
 -- Matches everything ignored by the parser.
 -- <% exp = 'LPeg pattern' %>
-IGNORED = (SPACE + COMMENT)^0
+scanner.IGNORED = (SPACE + COMMENT)^0
 
 -- Matches any Lua [#variable_IDENTIFIER identifier], [#variable_KEYWORD keyword], [#variable_SYMBOL symbol], [#variable_NUMBER number] or [#variable_STRING string].
 -- <% exp = 'LPeg pattern' %>
-TOKEN = IDENTIFIER + KEYWORD + SYMBOL + NUMBER + STRING
+scanner.TOKEN = IDENTIFIER + KEYWORD + SYMBOL + NUMBER + STRING
 
 -- Matches any [#variable_TOKEN token], [#variable_COMMENT comment] or [#variable_SPACE space].
 -- <% exp = 'LPeg pattern' %>
-ANY = TOKEN + COMMENT + SPACE -- TEMP: + error'invalid character'
+scanner.ANY = TOKEN + COMMENT + SPACE -- TEMP: + error'invalid character'
 
 -- Matches the beginning of a file.
 -- <% exp = 'LPeg pattern' %>
-BOF = m.P(function(s,i) return (i==1) and i end)
+scanner.BOF = m.P(function(s,i) return (i==1) and i end)
 
 -- Matches the end of a file.
 -- <% exp = 'LPeg pattern' %>
-EOF = m.P(-1)
+scanner.EOF = m.P(-1)
 
 -- Matches UNIX's shebang (e.g. `#!/usr/bin/lua`).
 -- <% exp = 'LPeg pattern' %>
-BANG = BOF * m.P'#!' * (m.P(1)-'\n')^0 * '\n'
+scanner.BANG = BOF * m.P'#!' * (m.P(1)-'\n')^0 * '\n'
+
+return scanner

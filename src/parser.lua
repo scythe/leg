@@ -158,7 +158,7 @@ local scanner = require 'leg.scanner'
 local grammar = require 'leg.grammar'
 
 -- module declaration
-module 'leg.parser'
+local parser = {}
 
 -- Searches for the last substring in s which matches pattern
 local function rfind(s, pattern, init, finish)
@@ -224,7 +224,7 @@ local S, listOf, anyOf = m.V'IGNORED', grammar.listOf, grammar.anyOf
 A table holding the Lua 5.1 grammar. See [#section_The_Grammar The Grammar] for an extended explanation.
 --]]
 -- <% exp = 'table' %>
-rules = {
+parser.rules = {
 	  IGNORED = scanner.IGNORED  -- seen as S below
 	, EPSILON = m.P(true)
 	, EOF     = scanner.EOF
@@ -335,8 +335,8 @@ rules = {
 }
 
 -- puts all the keywords and symbols to the grammar
-grammar.complete(rules, scanner.keywords)
-grammar.complete(rules, scanner.symbols)
+grammar.complete(parser.rules, scanner.keywords)
+grammar.complete(parser.rules, scanner.symbols)
 
 --[[
 Checks if `input` is valid Lua source code.
@@ -347,8 +347,8 @@ Checks if `input` is valid Lua source code.
 **Returns:**
 * `true`, if `input` is valid Lua source code, or `false` and an error message if the matching fails.
 --]]
-function check(input)
-  local builder = m.P(rules)
+function parser.check(input)
+  local builder = m.P(parser.rules)
   local result = builder:match(input)
   
   if result ~= #input + 1 then -- failure, build the error message
@@ -377,6 +377,6 @@ Uses [grammar.html#function_apply grammar.apply] to return a new grammar, with `
 **Returns:**
 * the extended grammar.
 --]]
-function apply(extraRules, captures)
+function parser.apply(extraRules, captures)
   return grammar.apply(rules, extraRules, captures)
 end

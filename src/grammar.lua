@@ -190,9 +190,7 @@ local lpeg = require 'lpeg'
 -- imported functions
 local P, V = lpeg.P, lpeg.V
 
--- module declaration
-module 'leg.grammar'
-
+local grammar = {}
 --[[ 
 Returns a pattern which matches any of the patterns received.
 
@@ -211,7 +209,7 @@ print( (g.anyOf { '+', '-', '%*', '/', m.C(s.NUMBER) }):match '34.5@23 %* 56 / 4
 **Returns:**
 * a pattern which matches any of the patterns received.
 --]]
-function anyOf(list)
+function grammar.anyOf(list)
   local patt = P(false)
   
   for i = 1, #list, 1 do
@@ -251,7 +249,7 @@ print( patt:match %[%[a, b, 'christmas eve'
 **Returns:**
 * the following pattern: ``patt %* (sep %* patt)^0``
 --]=]
-function listOf(patt, sep)
+function grammar.listOf(patt, sep)
   patt, sep = P(patt), P(sep)
   
   return patt * (sep * patt)^0
@@ -261,12 +259,12 @@ end
 --[[ 
 A capture function, made so that `patt / C` is equivalent to `m.C(patt)`. It's intended to be used in capture tables, such as those required by [#function_pipe pipe] and [#function_apply apply].
 --]]
-function C(...) return ... end
+function grammar.C(...) return ... end
 
 --[[ 
 A capture function, made so that `patt / Ct` is equivalent to `m.Ct(patt)`. It's intended to be used in capture tables, such as those required by [#function_pipe pipe] and [#function_apply apply].
 --]]
-function Ct(...) return { ... } end
+function grammar.Ct(...) return { ... } end
 
 --[[
 Creates a shallow copy of `grammar`.
@@ -277,10 +275,10 @@ Creates a shallow copy of `grammar`.
 **Returns:**
 * a newly created table, with `grammar`'s keys and values.
 --]]
-function copy(grammar)
+function grammar.copy(gmr)
 	local newt = {}
   
-	for k, v in pairs(grammar) do
+	for k, v in pairs(gmr) do
 		newt[k] = v
 	end
   
@@ -297,7 +295,7 @@ end
 **Returns:**
 * `dest`, with new rules inherited from `orig`.
 --]]
-function complete (dest, orig)
+function grammar.complete(dest, orig)
 	for rule, patt in pairs(orig) do
 		if not dest[rule] then
 			dest[rule] = patt
@@ -319,7 +317,7 @@ end
 **Returns:**
 * `dest`, suitably modified.
 --]]
-function pipe (dest, orig)
+function grammar.pipe(dest, orig)
 	for k, vorig in pairs(orig) do
 		local vdest = dest[k]
 		if vdest then
@@ -352,17 +350,17 @@ end
 **Returns:**
 * `rules`, suitably augmented by `grammar` and `captures`.
 --]]
-function apply (grammar, rules, captures)
+function grammar.apply(gmr, rules, captures)
   if rules == nil then
     rules = {}
   elseif type(rules) ~= 'table' then
     rules = { rules }
   end
   
-  complete(rules, grammar)
+  complete(rules, gmr)
   
-  if type(grammar[1]) == 'string' then
-    rules[1] = lpeg.V(grammar[1])
+  if type(gmr[1]) == 'string' then
+    rules[1] = lpeg.V(gmr[1])
   end
 	
 	if captures ~= nil then
@@ -376,3 +374,4 @@ function apply (grammar, rules, captures)
 	return rules
 end
 
+return grammar
