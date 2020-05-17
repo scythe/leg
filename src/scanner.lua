@@ -63,7 +63,7 @@ local m     = require 'lpeg'
 local re    = require 're'
 
 -- module declaration
-module 'leg.scanner'
+local scanner = {}
 
 ------------------------------ PATTERNS ---------------------------------------
 
@@ -110,7 +110,7 @@ function (subject, i)
 end
 ``
 --]]
-function error (msg)
+local function error (msg)
 	return function (subject, i)
 		local line = lines(string.sub(subject,1,i))
     
@@ -118,6 +118,7 @@ function error (msg)
       ..(subject:sub(i-10,i)):gsub('\n','EOL')..'": '..msg, 0)
 	end
 end
+scanner.error = error
 
 --[[
 Strips all prefixing `--` and enclosing `--%[=%*%[` from comment tokens.
@@ -128,7 +129,7 @@ Strips all prefixing `--` and enclosing `--%[=%*%[` from comment tokens.
 **Returns:**
 * the text without comment marking syntax.
 --]]
-function comment2text (comment) -- TEMP: LPeg could be used here
+function scanner.comment2text (comment) -- TEMP: LPeg could be used here
 	local ret, i, brackets = comment:find('^%-%-%[(=*)%[', i)
 	
   if ret then
@@ -155,7 +156,7 @@ Encloses the text with comment markers.
 **Returns:**
 * the text with comment marking syntax.
 --]]
-function text2comment (text)
+function scanner.text2comment (text)
 	-- finds a pattern anywhere in the subject, ripped from LPeg's home page
   local function anywhere(patt)
     return m.P { m.P(patt) + 1 * m.V(1) }
@@ -207,7 +208,7 @@ Strips all enclosing `'`, `"`, and `%[=%*%[` from string tokens, and processes e
 **Returns:**
 * the text without string enclosers.
 --]=]
-function string2text(str)
+function scanner.string2text(str)
   local escapeNum = m.C(N^-3) / tonumber
   local escapePatt = (
       (m.P'\\' * m.S[[ntrvabf'"\\]]) / escapeTable
@@ -247,7 +248,7 @@ Transforms a text into a syntactically valid Lua string. Similar to `string.form
 **Returns:**
 * a string, similar to string.format with option `'%%q'`.
 --]]
-function text2string(text)
+function scanner.text2string(text)
   local function reverseEscape(char)
     local c = reverseEscapeTable[char]
     
@@ -274,7 +275,8 @@ as keys.
 
 Examples: `keywords.WHILE`, `keywords%['ELSEIF'%]`.
 --]]
-keywords = {}
+local keywords = {}
+scanner.keywords = keywords
 
 --[[
 A table with Lua symbol-matching patterns, with the symbols themselves as 
@@ -282,7 +284,8 @@ keys.
 
 Examples: `symbols%['{'%]`, `symbols%['+'%]`.
 --]]
-symbols = {}
+local symbols = {}
+scanner.symbols = symbols
 
 -- Transforms strings into literal patterns of the same name.
 -- If "minus" is passed, each pattern is concatenated to it.
@@ -356,7 +359,7 @@ scanner.NUMBER = #(N + (m.P'.' * N)) * number
 
 -- Matches any Lua string.
 -- <% exp = 'LPeg pattern' %>
-local STRING = nil
+local STRING, multi
 do
 	-- TEMP ddd limites: local ddd  = m.P'\\' * (N^3 + N^2 + N^1)
 	          --  OPEN  and  (   (\?)    or ( anything not CLOSE or \n )^0 ) and    CLOSE
@@ -366,10 +369,10 @@ do
                                    close <- ']' =eq ']' / . close ]])
  
 	STRING = Str1 + Str2 + Str3
+	multi = m.P'--' * Str3
 end
 scanner.STRING = STRING
 
-local multi  = m.P'--' * long_brackets
 local single = m.P'--' * (1 - m.P'\n')^0
 
 -- Matches any type of comment.
@@ -386,15 +389,15 @@ scanner.SPACE = m.S'\n \t\r\f'
 
 -- Matches everything ignored by the parser.
 -- <% exp = 'LPeg pattern' %>
-scanner.IGNORED = (SPACE + COMMENT)^0
+scanner.IGNORED = (scanner.SPACE + scanner.COMMENT)^0
 
 -- Matches any Lua [#variable_IDENTIFIER identifier], [#variable_KEYWORD keyword], [#variable_SYMBOL symbol], [#variable_NUMBER number] or [#variable_STRING string].
 -- <% exp = 'LPeg pattern' %>
-scanner.TOKEN = IDENTIFIER + KEYWORD + SYMBOL + NUMBER + STRING
+scanner.TOKEN = scanner.IDENTIFIER + scanner.KEYWORD + scanner.SYMBOL + scanner.NUMBER + scanner.STRING
 
 -- Matches any [#variable_TOKEN token], [#variable_COMMENT comment] or [#variable_SPACE space].
 -- <% exp = 'LPeg pattern' %>
-scanner.ANY = TOKEN + COMMENT + SPACE -- TEMP: + error'invalid character'
+scanner.ANY = scanner.TOKEN + scanner.COMMENT + scanner.SPACE -- TEMP: + error'invalid character'
 
 -- Matches the beginning of a file.
 -- <% exp = 'LPeg pattern' %>
@@ -406,6 +409,6 @@ scanner.EOF = m.P(-1)
 
 -- Matches UNIX's shebang (e.g. `#!/usr/bin/lua`).
 -- <% exp = 'LPeg pattern' %>
-scanner.BANG = BOF * m.P'#!' * (m.P(1)-'\n')^0 * '\n'
+scanner.BANG = scanner.BOF * m.P'#!' * (m.P(1)-'\n')^0 * '\n'
 
 return scanner
