@@ -378,5 +378,7 @@ Uses [grammar.html#function_apply grammar.apply] to return a new grammar, with `
 * the extended grammar.
 --]]
 function parser.apply(extraRules, captures)
-  return grammar.apply(rules, extraRules, captures)
+  return grammar.apply(parser.rules, extraRules, captures)
 end
+
+return parser

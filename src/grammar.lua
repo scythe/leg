@@ -295,7 +295,7 @@ end
 **Returns:**
 * `dest`, with new rules inherited from `orig`.
 --]]
-function grammar.complete(dest, orig)
+local function complete(dest, orig)
 	for rule, patt in pairs(orig) do
 		if not dest[rule] then
 			dest[rule] = patt
@@ -304,6 +304,7 @@ function grammar.complete(dest, orig)
   
 	return dest
 end
+grammar.complete = complete
 
 --[[
 [#section_Piping Pipes] the captures in `orig` to the ones in `dest`.
