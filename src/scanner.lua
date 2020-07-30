@@ -341,16 +341,12 @@ scanner.SYMBOL = SYMBOL
 scanner.IDENTIFIER = AZ * (AZ+N)^0 - KEYWORD
 
 -- tries to implement the same read_numeral() as in llex.c
-local number = function (subject, i)
-	--               [.\d]+     .. ( [eE]  ..   [+-]? )?    .. isalnum()*
-	local patt = (m.P'.' + N)^1 * (m.S'eE' * m.S'+-'^-1)^-1 * (N+AZ)^0
-	patt = patt / function(num)
-    if not _G.tonumber(num) then 
-      error('Malformed number: '.._G.tostring(num))(subject,i) 
-    end 
-  end
-  
-	return m.match(patt, subject, i)
+local number = (m.P'.' + N)^1 * (m.S'eE' * m.S'+-'^-1)^-1 * (N+AZ)^0
+number = number - (symbols['..'] + symbols['...'])
+number = number / function(num)
+	if not _G.tonumber(num) then
+		error('Malformed number: '.._G.tostring(num))(subject,i)
+	end
 end
 
 -- Matches any Lua number.

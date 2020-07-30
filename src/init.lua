@@ -42,7 +42,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 -- $Id: init.lua,v 1.2 2007/11/26 18:41:51 hanjos Exp $
 
 local leg = {}
-leg.gramar = require 'leg.grammar'
+leg.grammar = require 'leg.grammar'
 leg.scanner = require 'leg.scanner'
 leg.parser = require 'leg.parser'
 
