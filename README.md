@@ -10,6 +10,11 @@ Erratum
 - 2020-4-11: Update leg to work with Lpeg 1.0.2. Some minor fixes. Ongoing
 maintenance is not guaranteed. Still expects Lua 5.1; no goto/label support.
 
+- 2020-7-30: Modify leg to use the new package format rather than the `module`
+function. Allows leg to compile under newer versions of Lua. However, I have
+not yet expanded the grammar to include 5.2+ features -- doing so in this
+repository is not a priority for me.
+
 - This version is still available under the original licence in COPYRIGHT.
 
 Dependencies
